@@ -347,6 +347,14 @@
                     window.open("/scrum-board"); 
                 }
             });
+            $("#btn-code-review").click(function () {
+                // 生成code review按钮
+                if (fileHasChanged())
+                    alert("请先保存文件");
+                else {
+                    window.open("/code-review"); 
+                }
+            });
 
         });
     </script>
@@ -365,6 +373,7 @@
                 <button class="toolbar-button button" id="btn-run">Run</button>
                 <button class="toolbar-button button" id="btn-flowChart">flowchart</button>
                 <button class="toolbar-button button" id="btn-scrum-board">Scrum Board</button>
+                <button class="toolbar-button button" id="code-review">Review</button>
             </div>
             <div id="file-list"></div>
         </div>
@@ -384,4 +393,6 @@
         </div>
     </div>
 </body>
+
+
 </html>
