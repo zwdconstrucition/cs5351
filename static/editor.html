@@ -339,6 +339,15 @@
                 // 登出按钮
                 window.location.href = "/logout";
             });
+            $("#btn-scrum-board").click(function () {
+                // 生成scrumboard按钮
+                if (fileHasChanged())
+                    alert("请先保存文件");
+                else {
+                    window.open("/scrum-board"); 
+                }
+            });
+
         });
     </script>
 </head>
@@ -355,6 +364,7 @@
                 <button class="toolbar-button button" id="btn-delete">Delete File</button>
                 <button class="toolbar-button button" id="btn-run">Run</button>
                 <button class="toolbar-button button" id="btn-flowChart">flowchart</button>
+                <button class="toolbar-button button" id="btn-scrum-board">Scrum Board</button>
             </div>
             <div id="file-list"></div>
         </div>
@@ -374,6 +384,4 @@
         </div>
     </div>
 </body>
-
-
 </html>
