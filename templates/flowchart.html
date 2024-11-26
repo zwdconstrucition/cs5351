@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="Author" content="Captain Chen">
+    <meta name="Keywords" content="python editor">
+    <title>Online Editor</title>
+    <script src="./static/jquery-3.6.0.min.js"></script>
+    <script src="./static/codemirror-5.65.3/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="./static/codemirror-5.65.3/lib/codemirror.css">
+    <script src="./static/codemirror-5.65.3/mode/python/python.js"></script>
+    <script src="./static/codemirror-5.65.3/keymap/sublime.js"></script>
+    <script src="./static/codemirror-5.65.3/addon/hint/show-hint.js"></script>
+    <link rel="stylesheet" href="./static/codemirror-5.65.3/addon/hint/show-hint.css">
+    <script src="./static/python-hint.js"></script>
+    <link rel="stylesheet" href="./static/layout.css">
+    <link rel="stylesheet" href="./static/element.css">
+    <style>
+        /* Page Background */
+        body {
+            background: linear-gradient(45deg, #f4f7fc, #ffffff); /* Soft gradient background */
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(to right, #4facfe, #00f2fe); /* Header gradient */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Shadow for header */
+            padding: 15px 0;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .button {
+            background-color: #4caf50; /* Green button */
+            color: white;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            background-color: #45a049; /* Darken green on hover */
+        }
+
+        .button:active {
+            transform: scale(0.95); /* Button shrink on click */
+        }
+
+        .toolbar-button {
+            width: 100px;
+            margin: 5px;
+        }
+
+        .file-card {
+            background-color: #fff;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Shadow for card */
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px); /* Lift up on hover */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-card.active {
+            background-color: #e0f7fa; /* Highlight active file */
+        }
+
+        .code-editor {
+            height: calc(100vh - 150px);
+        }
+
+        .CodeMirror {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            background-color: #fafafa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .CodeMirror-linenumbers {
+            color: #888;
+        }
+
+        .CodeMirror-gutters {
+            background-color: #fafafa;
+        }
+
+        .CodeMirror-foldgutter {
+            background-color: #f0f0f0;
+        }
+
+        .div-left {
+            background-color: rgb(235, 235, 235);
+            width: 220px;
+            padding: 10px;
+        }
+
+        .div-middle {
+            background-color: white;
+            padding: 10px;
+        }
+
+        .div-top {
+            box-shadow: 0px 3px 3px rgb(203, 203, 203);
+            padding: 10px;
+        }
+
+        .div-bottom {
+            padding: 10px;
+        }
+
+        #program-output pre {
+            background-color: #2e2e2e;
+            color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+        }
+
+        /* Scroll bar style */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+    </style>
+    <script>
+        var myCodeMirror;
+        var activeFile = "";
+        var cacheFile = "";
+
+        function spellCheck() {
+            var area = myCodeMirror.getWrapperElement();
+            var spans = area.getElementsByTagName('span');
+            for (i in spans) {
+                var res = false;
+                if (typeof(spans[i].classList) == "undefined")
+                    continue;
+                if (spans[i].textContent.length <= 1)
+                    continue;
+                spans[i].classList.remove('maybeWrong');
+                if (spans[i].classList.contains('cm-keywords') ||
+                    spans[i].classList.contains('cm-variable') ||
+                    spans[i].classList.contains('cm-def')) {
+                    res = CodeMirror.fuzzyCheck(spans[i].textContent);
+                }
+                if (res) {
+                    spans[i].classList.add('maybeWrong');
+                }
+            }
+        }
+
+        function fileHasChanged() {
+            curFile = myCodeMirror.getValue();
+            if (activeFile == "" || activeFile == null)
+                return curFile != "";
+            return curFile != cacheFile;
+        }
+
+        function confirmDiscard() {
+            var discard = true;
+            if (fileHasChanged())
+                discard = confirm("正在编辑的文件未保存，需要丢弃嘛？");
+            return discard;
+        }
+
+        function addFileCard(fileName) {
+            var isActive = "";
+            if (activeFile == fileName)
+                isActive = " active";
+            var str = '<div class="file-card row-container' + isActive + '" name="' + fileName + '"><img src="./static/pyicon.png" class="icon"><div class="file-name">' + fileName + '</div></div>';
+            $("#file-list").append(str);
+        }
+
+        function onClickFileCard() {
+            var fileName = $(this).attr("name");
+            if (activeFile == fileName)
+                return;
+            if (!confirmDiscard())
+                return;
+
+            $(".file-card").removeClass("active");
+            $(this).addClass("active");
+            $.post("/getFile", { "fileName": fileName }, function (ret) {
+                activeFile = fileName;
+                cacheFile = ret;
+                myCodeMirror.setValue(ret);
+                spellCheck();
+            });
+        }
+
+        function refreshFileList() {
+            $.post("/getFileList", {}, function (ret) {
+                $("#file-list").html("");
+                var data = $.parseJSON(ret);
+                for (i in data) {
+                    addFileCard(data[i]["fileName"]);
+                }
+                $(".file-card").click(onClickFileCard);
+            });
+        }
+
+        $(document).ready(function () {
+            refreshFileList();
+            myCodeMirror = CodeMirror.fromTextArea($("#yourcode")[0], {
+                mode: "python",
+                version: "3",
+                keyMap: "sublime",
+                lineNumbers: true,
+                smartIndent: true,
+                indentUnit: 4,
+                indentWithTabs: true,
+                lineWrapping: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter", "CodeMirror-lint-markers"],
+                foldGutter: true,
+                autofocus: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                styleActiveLine: true,
+                showHint: true,
+            });
+
+            CodeMirror.commands.autocomplete = function (cm) {
+                CodeMirror.showHint(cm, CodeMirror.pythonHint);
+            };
+            myCodeMirror.on("keyup", function (cm, event) {
+                if (!cm.state.completionActive &&
+                    ((event.keyCode >= 65 && event.keyCode <= 90) || event.keyCode == 52 || event.keyCode == 219 || event.keyCode == 190)) {
+                    CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+                }
+            });
+
+            $("#btn-newFile").click(function () {
+                if (!confirmDiscard())
+                    return;
+                $(".file-card").removeClass("active");
+                cacheFile = "";
+                activeFile = "";
+                myCodeMirror.setValue("");
+                refreshFileList();
+            });
+            $("#btn-delete").click(function () {
+                if (activeFile == "")
+                    return;
+                if (!confirm("确认删除文件吗？"))
+                    return;
+                $.post("/deleteFile", { "fileName": activeFile }, function () {
+                    activeFile = "";
+                    cacheFile = "";
+                    refreshFileList();
+                });
+            });
+            $("#btn-save").click(function () {
+                if (activeFile == "")
+                    return;
+                $.post("/saveFile", { "fileName": activeFile, "content": myCodeMirror.getValue() }, function () {
+                    cacheFile = myCodeMirror.getValue();
+                });
+            });
+            $("#btn-run").click(function () {
+                $.post("/run", { "fileName": activeFile, "content": myCodeMirror.getValue() }, function (ret) {
+                    $("#program-output pre").text(ret);
+                    spellCheck();
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <header>
+        Online Python Editor
+    </header>
+    <div class="div-left">
+        <div class="file-toolbar">
+            <button class="toolbar-button button" id="btn-newFile">New File</button>
+            <button class="toolbar-button button" id="btn-save">Save File</button>
+            <button class="toolbar-button button" id="btn-delete">Delete File</button>
+            <button class="toolbar-button button" id="btn-run">Run</button>
+        </div>
+        <div id="file-list"></div>
+    </div>
+    <div class="div-middle">
+        <div class="div-top">
+            <textarea id="yourcode" name="code"></textarea>
+        </div>
+        <div class="div-bottom">
+            <div id="program-output">
+                <pre></pre>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

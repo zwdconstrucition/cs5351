@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="Author" content="Captain Chen">
+    <meta name="Keywords" content="python editor">
+    <title>Online Editor</title>
+    <script src="./static/jquery-3.6.0.min.js"></script>
+    <script src="./static/codemirror-5.65.3/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="./static/codemirror-5.65.3/lib/codemirror.css">
+    <script src="./static/codemirror-5.65.3/mode/python/python.js"></script>
+    <script src="./static/codemirror-5.65.3/keymap/sublime.js"></script>
+    <script src="./static/codemirror-5.65.3/addon/hint/show-hint.js"></script>
+    <link rel="stylesheet" href="./static/codemirror-5.65.3/addon/hint/show-hint.css">
+    <script src="./static/python-hint.js"></script>
+    <link rel="stylesheet" href="./static/layout.css">
+    <link rel="stylesheet" href="./static/element.css">
+    <!--script src="./static/editor.js"></script>-->
+    <script>
+        var myCodeMirror;
+        var activeFile = "";
+        var cacheFile = "";
+
+        function spellCheck() {
+            var area = myCodeMirror.getWrapperElement();
+            var spans = area.getElementsByTagName('span');
+            for(i in spans) {
+                var res=false;
+                if(typeof(spans[i].classList) == "undefined")
+                    continue;
+                if(spans[i].textContent.length<=1)
+                    continue;
+                spans[i].classList.remove('maybeWrong');
+                if(spans[i].classList.contains('cm-keywords') ||
+                spans[i].classList.contains('cm-variable') ||
+                spans[i].classList.contains('cm-def')) {
+                    res=CodeMirror.fuzzyCheck(spans[i].textContent);
+                }
+                if(res) {
+                    spans[i].classList.add('maybeWrong');
+                }
+            }
+        }
+
+        function fileHasChanged() {
+            /**
+             * 判断当前文件是否被修改
+             */
+            curFile = myCodeMirror.getValue();
+            if (activeFile == "" || activeFile == null)
+                return curFile != "";
+            return curFile != cacheFile;
+        }
+        function confirmDiscard() {
+            /**
+             * 确认是否放弃修改文件
+             */
+            var discard = true;
+            if (fileHasChanged())
+                discard = confirm("正在编辑的文件未保存，需要丢弃嘛？");
+            return discard;
+        }
+
+        function addFileCard(fileName) {
+            /**
+             * 向文件列表里添加文件
+             */
+            var isActive = "";
+            if (activeFile == fileName)
+                isActive = " active";
+            var str = '<div class="file-card row-container' + isActive + '" name="' + fileName + '"><img src="./static/pyicon.png" class="icon"><div class="file-name">' + fileName + '</div></div>';
+            $("#file-list").append(str);
+        }
+
+        function onClickFileCard() {
+            /**
+             * 文件列表里的文件被选中时
+             */
+            var fileName = $(this).attr("name");
+            if (activeFile == fileName) //点击了当前文件
+                return;
+            if (!confirmDiscard()) // 确认是否丢弃当前被修改的文件
+                return;
+
+            $(".file-card").removeClass("active");
+            $(this).addClass("active");
+            //获取点击的文件内容
+            $.post("/getFile", { "fileName": fileName }, function (ret) {
+                activeFile = fileName;
+                cacheFile = ret;
+                myCodeMirror.setValue(ret);
+                spellCheck();
+            });
+        }
+
+        function refreshFileList() {
+            /**
+             * 刷新文件列表，重新post获取
+             */
+            $.post("/getFileList", {}, function (ret) {
+                $("#file-list").html("");
+                var data = $.parseJSON(ret);
+                for (i in data) {
+                    addFileCard(data[i]["fileName"]);
+                }
+                $(".file-card").click(onClickFileCard);
+            });
+        }
+
+        $(document).ready(function () {
+            refreshFileList();
+            // 设置代码编辑区，使用CodeMirror来实现代码高亮，自动补全等功能
+            myCodeMirror = CodeMirror.fromTextArea($("#yourcode")[0], {
+                mode: "python", // 语言模式
+                version: "3", // python 版本
+                keyMap: "sublime", // 快键键风格
+                lineNumbers: true, // 显示行号
+                smartIndent: true, // 智能缩进
+                indentUnit: 4, // 智能缩进单位为4个空格长度
+                indentWithTabs: true, // 使用制表符进行智能缩进
+                lineWrapping: true, // 自动换行
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter", "CodeMirror-lint-markers"],// 在行槽中添加行号显示器、折叠器、语法检测器
+                foldGutter: true, // 启用行槽中的代码折叠
+                autofocus: true, // 自动聚焦
+                matchBrackets: true, // 匹配结束符号，比如"]、}"
+                autoCloseBrackets: true, // 自动闭合符号
+                styleActiveLine: true, // 显示选中行的样式
+                showHint: true, // 自动补全
+            });
+            // 设置python自动补全器
+            CodeMirror.commands.autocomplete = function (cm) {
+                CodeMirror.showHint(cm, CodeMirror.pythonHint);
+            };
+            myCodeMirror.on("keyup", function (cm, event) {
+                //所有的字母和'$','{','.'在键按下之后都将触发⾃动补全
+                if (!cm.state.completionActive &&
+                    ((event.keyCode >= 65 && event.keyCode <= 90) || event.keyCode == 52 || event.keyCode == 219 || event.keyCode == 190)) {
+                    CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+                }
+            });
+
+            $("#btn-newFile").click(function () {
+                // 新建文件按钮
+                if (!confirmDiscard())
+                    return;
+                $(".file-card").removeClass("active");
+                cacheFile = "";
+                activeFile = "";
+                myCodeMirror.setValue("");
+                refreshFileList();
+            });
+            $("#btn-delete").click(function () {
+                // 删除文件按钮
+                if (activeFile == "")
+                    return;
+                if (confirm("确认删除文件? - " + activeFile)) {
+                    $.post("/deleteFile", { "fileName": activeFile }, function (ret) {
+                        refreshFileList();
+                        activeFile = "";
+                        cacheFile = "";
+                    });
+                }
+
+            });
+            $("#btn-run").click(function () {
+                // 运行代码按钮
+                if (fileHasChanged())
+                    alert("请先保存文件");
+                else {
+                    $.post("/runCode", { "fileName": activeFile }, function (ret) {
+                        $("#program-output pre").text(ret);
+                    });
+                }
+            });
+            $("#btn-save").click(function () {
+                // 保存文件代码
+                var fileName;
+                var overWrite = false;
+                if (activeFile == null || activeFile == "") { // 该文件是新建的
+                    fileName = prompt("保存文件名：", "a.py");
+                    overWrite = false;
+                }
+                else { // 该文件不是新建的
+                    fileName = activeFile;
+                    overWrite = true;
+                }
+                if (fileName == null)
+                    return;
+                $.post("/saveCode", { "code": myCodeMirror.getValue(), "fileName": fileName, "overWrite": overWrite }, function (ret) {
+                    if (ret == "success") {
+                        alert("保存成功 - 保存为" + fileName);
+                        activeFile = fileName;
+                        cacheFile = myCodeMirror.getValue();
+                        refreshFileList();
+                        spellCheck();
+                    }
+                    if (ret == "file exists")
+                        alert("保存失败 - 文件已存在");
+                });
+            });
+            $("#btn-flowChart").click(function () {
+                // 生成流程图按钮
+                if (fileHasChanged())
+                    alert("请先保存文件");
+                else {
+                    window.open("/flowchart?fileName=" + activeFile);
+                }
+            });
+            $("#btn-logout").click(function () {
+                // 登出按钮
+                window.location.href = "/logout";
+            });
+        });
+    </script>
+</head>
+
+<body class="col-container">
+    <header class="div-top" style="background-color: rgb(221,221,221); height:60px;">
+        <p class="absolute-center-col title">Code Walker</p>
+    </header>
+    <div class="div-middle row-container">
+        <div class="div-left col-container" style="background-color: rgb(235,235,235); width:200px;">
+            <div class="div-top row-container" style="height: 30px; box-shadow: 0px 3px 3px rgb(203, 203, 203);">
+                <button id="btn-newFile" class="button green absolute-center-col toolbar-button">新建</button>
+                <button id="btn-delete" class="button yellow absolute-center-col toolbar-button">删除</button>
+            </div>
+            <div class="div-top" style="margin-top:5px;height: 30px; border-bottom: 1px solid rgb(189, 189, 189);">
+                <span class="block-title">文件列表</span>
+            </div>
+            <div id="file-list" class="div-middle col-container" style="overflow-y: scroll">
+            </div>
+            <div class="div-bottom" style="height:50px;background-color: rgb(232, 242, 255);">
+                <button id="btn-logout" class="button blue absolute-center" style="width:100px;">退出登录</button>
+            </div>
+        </div>
+        <div class="div-middle col-container" style="background-color: white;">
+            <header class="div-top row-container"
+                style="background-color: white; height:30px; box-shadow: 0px 3px 3px rgb(221,221,221);">
+                <button id="btn-run" class="button green absolute-center-col toolbar-button">运行</button>
+                <button id="btn-save" class="button yellow absolute-center-col toolbar-button">保存</button>
+                <button id="btn-flowChart" class="button blue absolute-center-col toolbar-button"
+                    style="width:100px;">生成流程图</button>
+            </header>
+            <div class="div-middle">
+                <div class="code-editor">
+                    <textarea id="yourcode" style="display: none; height:100%;"></textarea>
+                </div>
+            </div>
+            <footer class="div-bottom col-container" style="height:200px; border-top: 2px solid rgb(221,221,221);">
+                <header class="div-top" style="height: 25px; border-bottom: 1px solid rgb(194, 194, 194);">
+                    <span class="block-title">运行结果</span>
+                </header>
+                <div class="div-middle">
+                    <div class="content-area" id="program-output" readonly="true">
+                        <pre></pre>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+</body>
+
+</html>
