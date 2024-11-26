@@ -16,7 +16,135 @@
     <script src="./static/python-hint.js"></script>
     <link rel="stylesheet" href="./static/layout.css">
     <link rel="stylesheet" href="./static/element.css">
-    <!--script src="./static/editor.js"></script>-->
+    <style>
+        /* Page Background */
+        body {
+            background: linear-gradient(45deg, #f4f7fc, #ffffff); /* Soft gradient background */
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(to right, #4facfe, #00f2fe); /* Header gradient */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Shadow for header */
+            padding: 15px 0;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .button {
+            background-color: #4caf50; /* Green button */
+            color: white;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            background-color: #45a049; /* Darken green on hover */
+        }
+
+        .button:active {
+            transform: scale(0.95); /* Button shrink on click */
+        }
+
+        .toolbar-button {
+            width: 100px;
+            margin: 5px;
+        }
+
+        .file-card {
+            background-color: #fff;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Shadow for card */
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px); /* Lift up on hover */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-card.active {
+            background-color: #e0f7fa; /* Highlight active file */
+        }
+
+        .code-editor {
+            height: calc(100vh - 150px);
+        }
+
+        .CodeMirror {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            background-color: #fafafa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .CodeMirror-linenumbers {
+            color: #888;
+        }
+
+        .CodeMirror-gutters {
+            background-color: #fafafa;
+        }
+
+        .CodeMirror-foldgutter {
+            background-color: #f0f0f0;
+        }
+
+        .div-left {
+            background-color: rgb(235, 235, 235);
+            width: 220px;
+            padding: 10px;
+        }
+
+        .div-middle {
+            background-color: white;
+            padding: 10px;
+        }
+
+        .div-top {
+            box-shadow: 0px 3px 3px rgb(203, 203, 203);
+            padding: 10px;
+        }
+
+        .div-bottom {
+            padding: 10px;
+        }
+
+        #program-output pre {
+            background-color: #2e2e2e;
+            color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+        }
+
+        /* Scroll bar style */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+    </style>
     <script>
         var myCodeMirror;
         var activeFile = "";
@@ -214,51 +342,38 @@
         });
     </script>
 </head>
-
-<body class="col-container">
-    <header class="div-top" style="background-color: rgb(221,221,221); height:60px;">
-        <p class="absolute-center-col title">Code Walker</p>
+<body>
+    <header>
+        Online Python Editor
     </header>
-    <div class="div-middle row-container">
-        <div class="div-left col-container" style="background-color: rgb(235,235,235); width:200px;">
-            <div class="div-top row-container" style="height: 30px; box-shadow: 0px 3px 3px rgb(203, 203, 203);">
-                <button id="btn-newFile" class="button green absolute-center-col toolbar-button">新建</button>
-                <button id="btn-delete" class="button yellow absolute-center-col toolbar-button">删除</button>
+    <div style="display: flex; height: calc(100vh - 60px);">
+        <!-- Left Section: File List -->
+        <div class="div-left" style="width: 200px;">
+            <div class="file-toolbar">
+                <button class="toolbar-button button" id="btn-newFile">New File</button>
+                <button class="toolbar-button button" id="btn-save">Save File</button>
+                <button class="toolbar-button button" id="btn-delete">Delete File</button>
+                <button class="toolbar-button button" id="btn-run">Run</button>
+                <button class="toolbar-button button" id="btn-flowChart">flowchart</button>
             </div>
-            <div class="div-top" style="margin-top:5px;height: 30px; border-bottom: 1px solid rgb(189, 189, 189);">
-                <span class="block-title">文件列表</span>
-            </div>
-            <div id="file-list" class="div-middle col-container" style="overflow-y: scroll">
-            </div>
-            <div class="div-bottom" style="height:50px;background-color: rgb(232, 242, 255);">
-                <button id="btn-logout" class="button blue absolute-center" style="width:100px;">退出登录</button>
-            </div>
+            <div id="file-list"></div>
         </div>
-        <div class="div-middle col-container" style="background-color: white;">
-            <header class="div-top row-container"
-                style="background-color: white; height:30px; box-shadow: 0px 3px 3px rgb(221,221,221);">
-                <button id="btn-run" class="button green absolute-center-col toolbar-button">运行</button>
-                <button id="btn-save" class="button yellow absolute-center-col toolbar-button">保存</button>
-                <button id="btn-flowChart" class="button blue absolute-center-col toolbar-button"
-                    style="width:100px;">生成流程图</button>
-            </header>
-            <div class="div-middle">
-                <div class="code-editor">
-                    <textarea id="yourcode" style="display: none; height:100%;"></textarea>
+
+        <!-- Right Section: Code Editor and Program Output -->
+        <div style="flex: 1; display: flex; flex-direction: column; position: relative;">
+            <!-- Code Editor Section -->
+            <div class="div-top" style="flex: 1; overflow: auto;">
+                <textarea id="yourcode" name="code" style="width: 100%; height: 100%; resize: none;"></textarea>
+            </div>
+            <!-- Program Output Section -->
+            <div class="div-bottom" style="flex: 1; overflow: auto; height: 200px;">
+                <div id="program-output" style="overflow-y: auto; height: 100%; padding: 10px; background-color: #f5f5f5; border-top: 1px solid #ccc;">
+                    <pre></pre>
                 </div>
             </div>
-            <footer class="div-bottom col-container" style="height:200px; border-top: 2px solid rgb(221,221,221);">
-                <header class="div-top" style="height: 25px; border-bottom: 1px solid rgb(194, 194, 194);">
-                    <span class="block-title">运行结果</span>
-                </header>
-                <div class="div-middle">
-                    <div class="content-area" id="program-output" readonly="true">
-                        <pre></pre>
-                    </div>
-                </div>
-            </footer>
         </div>
     </div>
 </body>
+
 
 </html>
