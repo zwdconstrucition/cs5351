@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- 引入 Allura 字体 -->
+        <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+        <style>
+            /* 整体布局 */
+            body {
+                font-family: 'Patrick Hand', cursive; /* 使用 Patrick Hand 字体 */
+                margin: 0;
+                padding: 0;
+            }
+    
+            header {
+                background-color: #d44;
+                color: #fff;
+                padding: 20px;
+                text-align: center;
+            }
+    
+            .board-container {
+                display: flex;
+                justify-content: space-between;
+                padding: 20px;
+            }
+    
+            .column {
+                background-color: #f5f5f5;
+                border-radius: 5px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                flex: 1;
+                margin: 0 10px;
+                padding: 20px;
+                min-height: 300px;
+                position: relative; /* 为加号按钮提供位置 */
+            }
+    
+            .column h2 {
+                color: #d44;
+                margin-top: 0;
+                font-family: 'Allura', cursive; /* 使用手写字体 */
+            }
+    
+            /* 卡片样式 */
+            .card {
+                background-color: #fff;
+                border-radius: 5px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                margin-bottom: 20px;
+                padding: 20px;
+                cursor: move;
+                position: relative;
+            }
+    
+            .card h3 {
+                margin-top: 0;
+                cursor: text;
+                font-family: 'Allura', cursive; /* 使用手写字体 */
+            }
+    
+            .actions {
+                display: flex;
+                justify-content: flex-end;
+            }
+    
+            .actions button {
+                background-color: transparent;
+                border: none;
+                color: #d44;
+                cursor: pointer;
+                font-size: 16px;
+                margin-left: 10px;
+            }
+    
+            .assignee {
+                align-items: center;
+                display: flex;
+                margin-top: 10px;
+            }
+    
+            .avatar {
+                background-color: #d44;
+                border-radius: 50%;
+                height: 30px;
+                margin-right: 10px;
+                width: 30px;
+            }
+    
+            .name {
+                color: #333;
+                font-size: 14px;
+            }
+    
+            /* 小加号按钮样式（位于 Stories 栏外部左下角） */
+            .add-card-btn {
+                position: absolute;
+                bottom: 10px;   /* 距离底部10px */
+                left: 10px;     /* 距离左边10px */
+                background-color: transparent;
+                color: #d44;
+                font-size: 24px;
+                border: none;
+                cursor: pointer;
+                box-shadow: none; /* 移除阴影 */
+            }
+    
+            .add-card-btn:hover {
+                color: #c33;
+            }
+    
+            /* 删除按钮样式 */
+            .delete-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: transparent;
+                border: none;
+                color: #d44;
+                font-size: 20px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    
+<body>
+    <header>
+        <h1>Scrum for Agile Teams</h1>
+    </header>
+    <main>
+        <div class="board-container">
+            <div class="column" id="stories" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2>Stories</h2>
+                <!-- 初始卡片 -->
+                <div class="card" draggable="true" ondragstart="drag(event)">
+                    <h3 ondblclick="editCardText(this)">My Favorite Project</h3>
+                    <button class="delete-btn" onclick="deleteCard(this)">-</button>
+                </div>
+            </div>
+            <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2>To Do</h2>
+            </div>
+            <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2>In Progress</h2>
+            </div>
+            <div class="column" id="verify" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2>Verify</h2>
+            </div>
+            <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2>Done</h2>
+            </div>
+        </div>
+    </main>
+
+    <!-- 加号按钮，位于 Stories 栏外部左下角 -->
+    <button class="add-card-btn" onclick="addCard('stories')">+</button>
+
+    <script>
+        // 拖放功能
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            var draggedCard = document.getElementById(data);
+            var targetColumn = ev.target;
+
+            if (targetColumn.classList.contains("column")) {
+                targetColumn.appendChild(draggedCard);
+                saveBoard();  // 更新本地存储
+            } else if (targetColumn.classList.contains("card")) {
+                targetColumn.parentNode.insertBefore(draggedCard, targetColumn);
+                saveBoard();  // 更新本地存储
+            }
+        }
+
+        // 添加新卡片
+        function addCard(columnId) {
+            var newCard = document.createElement("div");
+            newCard.className = "card";
+            newCard.draggable = true;
+            newCard.id = "card-" + new Date().getTime(); // 为每个新卡片生成一个唯一的 ID
+            newCard.ondragstart = function(event) { drag(event); };
+            newCard.innerHTML = `<h3 ondblclick="editCardText(this)">New Task</h3>`;
+            var deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.innerText = "-";
+            deleteBtn.onclick = function() { deleteCard(deleteBtn); };
+            newCard.appendChild(deleteBtn);
+            document.getElementById(columnId).appendChild(newCard);
+            saveBoard();  // 更新本地存储
+        }
+
+        // 编辑卡片文字
+        function editCardText(element) {
+            var currentText = element.innerText;
+            var input = document.createElement("input");
+            input.type = "text";
+            input.value = currentText;
+            input.onblur = function() {
+                element.innerText = input.value || currentText;
+                element.style.cursor = "text"; // 恢复光标样式
+                saveBoard();  // 更新本地存储
+            };
+            element.innerText = '';
+            element.appendChild(input);
+            input.focus();
+            input.select();
+            element.style.cursor = "text"; // 设置光标样式
+        }
+
+        // 删除卡片
+        function deleteCard(button) {
+            var card = button.parentNode;
+            card.parentNode.removeChild(card);
+            saveBoard();  // 更新本地存储
+        }
+
+        // 从 localStorage 加载看板数据
+        function loadBoard() {
+            const boardData = JSON.parse(localStorage.getItem('scrumBoard'));
+            if (boardData) {
+                ['stories', 'todo', 'in-progress', 'verify', 'done'].forEach(columnId => {
+                    const column = document.getElementById(columnId);
+                    const cards = boardData[columnId] || [];
+                    cards.forEach(card => {
+                        const newCard = createCardElement(card.id, card.text);
+                        column.appendChild(newCard);
+                    });
+                });
+            } else {
+                // 如果 localStorage 没有数据，添加一个空的卡片
+                ['stories', 'todo', 'in-progress', 'verify', 'done'].forEach(columnId => {
+                    const column = document.getElementById(columnId);
+                    const newCard = createCardElement("card-" + new Date().getTime(), "Click to edit");
+                    column.appendChild(newCard);
+                });
+            }
+        }
+
+        // 保存看板数据到 localStorage
+        function saveBoard() {
+            const boardData = {};
+            ['stories', 'todo', 'in-progress', 'verify', 'done'].forEach(columnId => {
+                const column = document.getElementById(columnId);
+                const cards = [];
+                column.querySelectorAll('.card').forEach(card => {
+                    cards.push({
+                        id: card.id,
+                        text: card.querySelector('h3').innerText
+                    });
+                });
+                boardData[columnId] = cards;
+            });
+            localStorage.setItem('scrumBoard', JSON.stringify(boardData));
+        }
+
+        // 创建卡片元素
+        function createCardElement(id, text) {
+            const newCard = document.createElement("div");
+            newCard.className = "card";
+            newCard.draggable = true;
+            newCard.id = id;
+            newCard.ondragstart = function(event) { drag(event); };
+            newCard.innerHTML = `<h3 ondblclick="editCardText(this)">${text}</h3>`;
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.innerText = "-";
+            deleteBtn.onclick = function() { deleteCard(deleteBtn); };
+            newCard.appendChild(deleteBtn);
+            return newCard;
+        }
+
+        // 页面加载时，加载看板数据
+        window.onload = loadBoard;
+    </script>
+</body>
+</html>
