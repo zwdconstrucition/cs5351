@@ -371,7 +371,13 @@
                     window.open("/pylintcheck?fileName=" + activeFile);
                 }
             });
-
+            $("#btn-uml").click(function () {
+                if (fileHasChanged()) {
+                    alert("Please save the file first.");
+                } else {
+                    window.open("/uml-diagram");
+                }
+            });
         });
     </script>
 </head>
@@ -404,7 +410,7 @@
                 <button class="toolbar-button button" id="btn-run">
                     <span class="icon">&#9654;</span> Run
                 </button>
-                
+                <button class="toolbar-button button" id="btn-uml">UML Class</button>
             </div>
             <div id="file-list"></div>
             <button class="toolbar-button button" id="btn-logout">
