@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="Author" content="ZHANG Weidi">
+    <meta name="Keywords" content="python pylint output">
+    <title>UML Class Diagram Generator</title>
+    <script src="./static/jquery-3.6.0.min.js"></script>
+    <script src="./static/codemirror-5.65.3/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="./static/codemirror-5.65.3/lib/codemirror.css">
+    <script src="./static/codemirror-5.65.3/mode/python/python.js"></script>
+    <style>
+        body {
+            background: #f4f7fc;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #4facfe;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 24px;
+        }
+
+        .button {
+            background-color: #4caf50;
+            color: white;
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .CodeMirror {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        #uml-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        #uml-diagram img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <header>UML Class Diagram Generator</header>
+
+    <div style="padding: 20px;">
+        <textarea id="code-editor" placeholder="输入 Python 代码"></textarea>
+        <button class="button" id="btn-generate-uml">生成 UML 类图</button>
+        <div id="uml-diagram">UML 类图将在此处显示...</div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const codeEditor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                mode: 'python',
+                lineNumbers: true,
+                theme: 'default'
+            });
+
+            $('#btn-generate-uml').click(function () {
+                const code = codeEditor.getValue();
+                if (!code.trim()) {
+                    alert('请输入代码！');
+                    return;
+                }
+
+                // Send the code to the server for UML diagram generation
+                $.post('/generateUML', { code: code }, function (response) {
+                    if (response.error) {
+                        alert('生成 UML 类图时出错: ' + response.error);
+                    } else {
+                        // Display the UML diagram (response.url contains the image path)
+                        $('#uml-diagram').html(`<img src="${response.url}" alt="UML Diagram">`);
+                    }
+                }).fail(function () {
+                    alert('无法连接服务器，请检查后重试。');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

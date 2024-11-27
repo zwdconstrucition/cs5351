@@ -355,7 +355,13 @@
                     window.open("/code-review"); 
                 }
             });
-
+            $("#btn-uml").click(function () {
+                if (fileHasChanged()) {
+                    alert("Please save the file first.");
+                } else {
+                    window.open("/uml-diagram");
+                }
+            });  
         });
     </script>
 </head>
@@ -374,6 +380,7 @@
                 <button class="toolbar-button button" id="btn-flowChart">flowchart</button>
                 <button class="toolbar-button button" id="btn-scrum-board">Scrum Board</button>
                 <button class="toolbar-button button" id="code-review">Review</button>
+                <button class="toolbar-button button" id="btn-uml">UML Class</button>
             </div>
             <div id="file-list"></div>
         </div>
