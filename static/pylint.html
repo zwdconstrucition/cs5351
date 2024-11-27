@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="Author" content="Captain Chen">
+    <meta name="Keywords" content="python pylint output">
+    <title>Pylint Analysis Output</title>
+    <script src="./static/jquery-3.6.0.min.js"></script>
+    <script src="./static/codemirror-5.65.3/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="./static/codemirror-5.65.3/lib/codemirror.css">
+    <script src="./static/codemirror-5.65.3/mode/python/python.js"></script>
+    <script src="./static/codemirror-5.65.3/keymap/sublime.js"></script>
+    <script src="./static/codemirror-5.65.3/addon/hint/show-hint.js"></script>
+    <link rel="stylesheet" href="./static/codemirror-5.65.3/addon/hint/show-hint.css">
+    <style>
+        /* Page Background */
+        body {
+            background: linear-gradient(45deg, #f4f7fc, #ffffff); /* Soft gradient background */
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(to right, #4facfe, #00f2fe); /* Header gradient */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Shadow for header */
+            padding: 15px 0;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        /* Button Styles */
+        .button {
+            background-color: #4caf50; /* Green button */
+            color: white;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            background-color: #45a049; /* Darken green on hover */
+        }
+
+        .button:active {
+            transform: scale(0.95); /* Button shrink on click */
+        }
+
+        /* Code editor styling */
+        .CodeMirror {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            background-color: #fafafa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .CodeMirror-linenumbers {
+            color: #888;
+        }
+
+        #pylint-output pre {
+            background-color: #2e2e2e;
+            color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+        }
+
+        /* Scroll bar style */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .div-left {
+            background-color: rgb(235, 235, 235);
+            width: 220px;
+            padding: 10px;
+        }
+
+        .div-middle {
+            background-color: white;
+            padding: 10px;
+        }
+
+        .div-top {
+            box-shadow: 0px 3px 3px rgb(203, 203, 203);
+            padding: 10px;
+        }
+
+        .div-bottom {
+            padding: 10px;
+        }
+    </style>
+    <script>
+        var activeFile = "";
+        var pylintOutput = "";
+
+        function displayPylintResults(output) {
+            var formattedOutput = "<pre>" + output + "</pre>";
+            $("#pylint-output").html(formattedOutput);
+        }
+
+        function analyzeCode() {
+            $.post("/analyzeCode", { "fileName": activeFile }, function (ret) {
+                if (ret == "error") {
+                    alert("Error analyzing the code.");
+                } else {
+                    pylintOutput = ret;
+                    displayPylintResults(pylintOutput);
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // Set the active file from the URL or local storage
+            activeFile = localStorage.getItem("activeFile") || "";
+
+            $("#btn-analyze").click(function () {
+                if (activeFile === "") {
+                    alert("请先选择文件进行分析");
+                    return;
+                }
+                analyzeCode();
+            });
+
+            $("#btn-back").click(function () {
+                window.location.href = "/editor";
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <header>
+        Pylint Analysis Output
+    </header>
+
+    <div style="display: flex; height: calc(100vh - 60px);">
+        <!-- Left Section: File List and Actions -->
+        <div class="div-left">
+            <button class="button" id="btn-analyze">Analyze Code</button>
+            <button class="button" id="btn-back">Back to Editor</button>
+        </div>
+
+        <!-- Right Section: Pylint Output -->
+        <div style="flex: 1; display: flex; flex-direction: column; position: relative;">
+            <!-- Pylint Output Section -->
+            <div class="div-top" style="flex: 1; overflow: auto;">
+                <div id="pylint-output" style="overflow-y: auto; height: 100%; padding: 10px; background-color: #f5f5f5; border-top: 1px solid #ccc;">
+                    <pre>等待分析结果...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
