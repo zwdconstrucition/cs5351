@@ -364,11 +364,13 @@
                 }
             });
             $("#btn-Check").click(function () {
-                // 生成code review按钮
+                // 运行代码按钮
                 if (fileHasChanged())
                     alert("请先保存文件");
                 else {
-                    window.open("/pylintcheck?fileName=" + activeFile);
+                    $.post("/reviewCode", { "fileName": activeFile }, function (ret) {
+                        $("#program-output pre").text(ret);
+                    });
                 }
             });
             $("#btn-uml").click(function () {
