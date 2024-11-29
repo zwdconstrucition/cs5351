@@ -34,11 +34,11 @@ Use a modified version of CodeMirror, adding python-hint.jsto suggest Python com
 
 Use the edit distance algorithm to compare the keywords in the code with Python keywords. If the edit distance < 2, highlight with a wavy underline.
 
-4. **运行代码显示结果**：Able to run the code on the web end and display the results.
+4. **un Code and Display Results**：Able to run the code on the web end and display the results.
 
 Run the code on the server side, redirect the output and error streams, capture the program output, and return it to the webpage.
 
-5. **流程图生成**：Generate a flowchart based on the execution process of Python code.
+5. **Flowchart Generation**：Generate a flowchart based on the execution process of Python code.
 
 Use the pyflowchart package to analyze the code, generate flowchart text in markdown format, and then use external code flowchart.jsto generate the flowchart on the webpage.
 ## Project Description
