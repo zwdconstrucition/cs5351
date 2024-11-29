@@ -1,161 +1,141 @@
-# Code Walker 
+# Scrum Project Management and Python IDE
 
-北京大学程序设计思维课程大作业
+This is the course project of Group "Course Project 24" for the CityU CS5351 24Fall.
 
-用python flask与html实现在线python网页编辑
-
-利用CodeMirror来实现代码高亮
-
-实现了代码自动联想补全
-
-能够根据python代码生成流程图
-
-效果图：
-
-![editor](doc/editor.png)
-
-## 作业需求分析
-
-规划需要实现的功能有：
-
-1. **用户登录系统**：每个用户能够登录，拥有自己的工作空间。
-
-   用数据库存储用户信息以及密码，以及网页上的界面登录
-
-2. **代码高亮**：在编辑python代码时，能够对函数，变量，字符串等显示不同颜色
-
-   使用第三方包CodeMirror，解析输入的代码，并自动添加html标签，实现不同颜色实现。
-
-3. **代码自动补全**：能够通过输入的字符，识别可以补全的常用python函数及关键字，以及自定义变量名和函数名
-
-   使用修改后的CodeMirror，添加python-hint.js来联想python的补全，添加相关代码获取所有已定义的变量和函数进行进一步联想
-
-4. **代码自动联想查错**：对代码中的关键字等，推测其是否有拼写错误，如果有则将其标出
-
-   使用编辑距离算法，判断代码中的关键字与python的关键字比对，若编辑距离<2，则将其标出波浪下划线
-
-4. **运行代码显示结果**：能够在网页端运行代码并显示结果
-
-   在服务端运行代码，重定向输出和错误输出流，获取程序输出信息，返回到网页
-
-5. **流程图生成**：能够根据python代码的执行过程，生成程序的流程图
-   用pyflowchart包，分析代码，生成markdown格式的flowchart文本，然后在网页上用外部代码flowchart.js来生成流程图
-
-## 项目说明
-
-python包需求：
-
-```
-flask
-pyflowchart
-json
-sqlite3
-```
-
-**main.py**：flask主程序
-
-**user_login.py**：控制用户登录相关功能的代码
-
-**run_code.py**：控制运行和编辑代码相关功能的代码
-
-**FLowChart.py**：生成流程图相关的代码
-
-**DBdebug.py**：调试数据库代码
-
-
-
-**users.db**：存储用户数据的数据库
-
-**work/**：存储各个用户的工作目录
-
-
-
-**static/editor.html**：编辑器主界面
-
-**static/register_success.html**：注册成功页面
-
-**static/repeat_login.html**：重复登录显示页面
-
-
-
-**static/element.css**：编辑器元素的样式
-
-**static/layout.css**：排版样式
-
-**static/login.css**：登录注册界面样式
-
-
-
-**static/python-hint.js**：用于进行python自动补全的javascript代码
-
-static文件夹内其余文件均为第三方包的文件
-
-
-
-**templates/flowchart.html**：流程图显示模板
-
-**templates/index.html**：登陆界面
-
-**templates/register.html**：注册界面
-
-
-
-## 项目操作手册
-
-运行服务器指令
-
-```
-python main.py
-```
-
-在浏览器输入```localhost```进入网页
-
-首次进入需要先注册账号，或者使用测试账号
-
-```
-user: CaptainChen     pwd : 12345
-user: Alice           pwd : 12345
-```
-
-在编辑器页面中，左侧为文件选择列表，右侧为代码编辑区域
-
-上方有”新建“，”删除“，”运行“，”保存“，”生成流程图“按钮
-
-运行，生成流程图等功能都必须在代码保存后进行
-
-下方显示程序的运行结果
-
-### 测试数据
-
-测试账户
-
-```
-user: CaptainChen     pwd : 12345
-user: Alice           pwd : 12345
-```
-
-测试用代码：
-
-在CaptainChen用户中有```prime.py```代码，输出1~100的质数
-
-可以运行该代码，生成该代码流程图，效果如下：
-
-<img src="doc/prime_run.png" alt="prime_run" style="zoom:40%;" />        
-
-  <img src="doc/prime_flowchart.png" alt="prime_flowchart" style="zoom:80%;" />
-
-
-
-测试用代码```Dijkstra.py```，运行最短路算法。
-
-测试用代码```add.py```，可以显示错误信息：
-
-```
-3
-1
-Traceback (most recent call last):
-  File ".\add.py", line 5, in <module>
-    print(1/0)
-ZeroDivisionError: division by zero
-```
+Our platform integrates an online Python Web Editor with task management tools to facilitate software development and collaboration. The platform features a robust Python coding environment, task-tracking capabilities, and software quality analysis tools.
+
+---
+
+<img src="doc/FinalFrontend.png" alt="UI" style="zoom:40%;" />
+
+## **Features**
+
+### Core Features
+1. **User Authentication System**:  
+   - Provides secure login functionality using a database for credential storage.
+   - Users have dedicated workspaces for managing their Python projects.
+
+2. **Syntax Highlighting**:  
+   - Implements real-time syntax highlighting for Python code.
+   - Utilizes the CodeMirror library to improve code readability by distinguishing functions, variables, strings, and keywords.
+
+3. **Code Auto-Completion**:  
+   - Enhances coding efficiency with intelligent suggestions for Python functions, keywords, and user-defined entities.
+   - Integrates a customized CodeMirror solution for context-aware suggestions.
+
+4. **Code Error Detection**:  
+   - Highlights potential errors in Python code using an edit-distance algorithm.
+   - Identifies and underlines possible misspellings in Python keywords or user-defined entities.
+
+5. **Code Execution**:  
+   - Enables users to run Python scripts directly on the server.
+   - Captures output and error streams for real-time feedback displayed in the UI.
+
+6. **Flowchart Generation**:  
+   - Converts Python code into flowcharts to visualize execution logic.
+   - Uses `pyflowchart` and external rendering libraries to create interactive diagrams.
+
+7. **Scrum Board**:  
+   - Implements a task management system modeled after Agile principles.  
+   - Features include:  
+     - Task creation, assignment, and progress tracking.
+     - Visualization of team velocity and sprint goals.  
+   - Facilitates efficient project tracking and collaboration.  
+   - **Module**: `scrum_board.py`
+
+8. **Pylint Code Review**:  
+   - Integrates static code analysis to ensure code quality and adherence to Python best practices.  
+   - Reports on style issues, potential bugs, and optimization suggestions.  
+   - **Module**: `pylint.py`
+
+9. **UML Diagram Generation**:  
+   - Automatically generates UML class diagrams from Python codebases.  
+   - Provides insights into the structure and design of the application.  
+   - Utilizes `pyreverse` and `Graphviz` for rendering diagrams.  
+   - **Module**: `uml_diagram.py`
+
+---
+
+## **Project Structure**
+
+### Backend Modules
+- **main.py**: Main Flask application controller.  
+- **user_login.py**: Handles user authentication and session management.  
+- **run_code.py**: Executes Python code and manages related functionalities.  
+- **flowchart.py**: Implements flowchart generation.  
+- **scrum_board.py**: Manages Scrum board features for task tracking and sprints.  
+- **pylint.py**: Provides static code analysis using Pylint.  
+- **uml_diagram.py**: Facilitates UML diagram generation.  
+- **DBdebug.py**: Manages debugging operations for the database.
+
+### Frontend and Assets
+- **static/**:  
+  - Contains CSS files for styling and JavaScript for syntax highlighting and auto-completion.  
+  - Includes assets for Scrum board interaction and UML visualization.
+
+- **templates/**:  
+  - HTML templates for the editor, login interface, and Scrum board.  
+
+### Database
+- **users.db**: SQLite database for storing user credentials and project metadata.  
+- **work/**: Directory for individual user workspaces.
+
+---
+
+## **Technology Stack**
+
+- **Backend Framework**: Flask  
+- **Frontend Library**: CodeMirror  
+- **Database**: SQLite  
+- **Visualization Tools**:  
+  - `pyflowchart` (Flowchart generation)  
+  - `pyreverse` and `Graphviz` (UML diagrams)  
+- **Code Quality**: Pylint  
+
+---
+
+## **Getting Started**
+
+1. **Install Required Dependencies**:  
+   ```bash
+   pip install flask pyflowchart pylint pyreverse
+   sudo apt-get install graphviz
+   ```
+   
+2.**Run the Server**:
+   ```bash
+   python main.py
+   ```
+
+3.**Access the Platform**:
+Open a browser and navigate to local host.
+
+4.**Login or Register**:
+For new users, register an account.
+Test accounts:
+user: Alice           password: 12345
+user: G24             password: 12345
+
+5.**Features Navigation**:
+Editor Page: Includes a file browser (left), code editor (right), and output panel (bottom).
+Buttons for actions like "New", "Save", "Run", "Flowchart", "UML Class".
+Scrum Board: Accessible from the main menu for task management.
+
+## Example Outputs
+1.**Prime Numbers Code Output**:
+Test Code: Generates prime numbers between 1 and 100.
+<img src="doc/prime_run.png" alt="prime_run" style="zoom:40%;" />
+2.**Flowchart Example**:
+<img src="doc/FinalFlowChart.png" alt="flowchart" style="zoom:80%;" />
+3.**UML Diagram Example**:
+<img src="doc/FinalUML.png" alt="uml" style="zoom:80%;" />
+4.**Scrum Board Example**:
+<img src="doc/FinalScrumBoard.png" alt="scrum_board" style="zoom:80%;" />
+5.**Pylint Code Review**:
+<img src="doc/PylintCodeReview.png" alt="Pylint" style="zoom:80%;" />
+
+## Future Development Goals
+Enhance collaboration features, such as real-time editing and task assignment notifications.
+Expand UML diagram support for additional diagram types.
+Introduce additional Scrum metrics like burn-down charts and capacity planning.
 
