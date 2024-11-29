@@ -12,7 +12,7 @@ Able to generate flowcharts based on Python code
 
 效果图：
 
-![editor](doc/editor.png)
+![editor](doc/FinalFrontend.png)
 
 ## Assignment Requirement Analysis
 
@@ -34,7 +34,7 @@ Use a modified version of CodeMirror, adding python-hint.jsto suggest Python com
 
 Use the edit distance algorithm to compare the keywords in the code with Python keywords. If the edit distance < 2, highlight with a wavy underline.
 
-4. **un Code and Display Results**：Able to run the code on the web end and display the results.
+4. **Run Code and Display Results**：Able to run the code on the web end and display the results.
 
 Run the code on the server side, redirect the output and error streams, capture the program output, and return it to the webpage.
 
@@ -139,7 +139,7 @@ You can run this code and generate its flowchart, as shown below:
 
 <img src="doc/prime_run.png" alt="prime_run" style="zoom:40%;" />        
 
-  <img src="doc/prime_flowchart.png" alt="prime_flowchart" style="zoom:80%;" />
+  <img src="doc/FinalFlowChart.png" alt="prime_flowchart" style="zoom:80%;" />
 
 
 
