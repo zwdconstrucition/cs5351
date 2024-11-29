@@ -10,7 +10,7 @@ Implemented code auto-completion
 
 Able to generate flowcharts based on Python code
 
-效果图：
+Frontend (UI)：
 
 ![editor](doc/FinalFrontend.png)
 
@@ -50,6 +50,13 @@ flask
 pyflowchart
 json
 sqlite3
+pylint
+pyreverse
+```
+
+Othre requirements:
+```
+Graphviz
 ```
 
 **main.py**：Flask main program
@@ -133,26 +140,11 @@ user: Alice           pwd : 12345
 
 Test code:
 
-The user CaptainChen has a file named prime.py which outputs prime numbers from 1 to 100.
+The user Alice has a file named prime.py which outputs prime numbers from 1 to 100.
 
 You can run this code and generate its flowchart, as shown below:
 
 <img src="doc/prime_run.png" alt="prime_run" style="zoom:40%;" />        
 
-  <img src="doc/FinalFlowChart.png" alt="prime_flowchart" style="zoom:80%;" />
-
-
-
-Test code Dijkstra.py, runs the shortest path algorithm.
-
-Test code add.py, can display error messages:
-
-```
-3
-1
-Traceback (most recent call last):
-  File ".\add.py", line 5, in <module>
-    print(1/0)
-ZeroDivisionError: division by zero
-```
+<img src="doc/FinalFlowChart.png" alt="prime_flowchart" style="zoom:80%;" />
 
