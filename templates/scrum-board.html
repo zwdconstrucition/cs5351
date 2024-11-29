@@ -1,85 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- 引入字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <!-- 引入 FontAwesome 图标库 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <style>
         /* 整体布局 */
         body {
-            font-family: 'Patrick Hand', cursive;
+            font-family: 'Permanent Marker', cursive;
             margin: 0;
             padding: 0;
-            padding-top: 60px; /* 给顶部标题预留空间，防止内容重叠 */
+            background-image: url("https://github.com/aliasaria/scrumblr/blob/master/client/css/bg/cardboard.png?raw=true");
+            background-size: cover;  /* 让背景图片覆盖整个页面 */
+            background-position: center center;  /* 图片居中 */
+            background-repeat: no-repeat;  /* 不重复背景图片 */
+            background-color: #e0e0e0; /* 添加轻微灰色背景，增加对比 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+        }
+
+        /* 容器 */
+        .container {
+            width: 70%;
+            top: 5%;
+            min-height: 70vh;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+
+            /* 模拟更真实的白板立体边框 */
+            border: 14px solid #d1d1d1;  /* 更厚的边框，带有浅灰色调 */
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2),   /* 内部阴影，模拟白板表面 */
+                        0 6px 25px rgba(0, 0, 0, 0.4),    /* 更强烈的外部阴影，增强立体感 */
+                        0 0 25px rgba(0, 0, 0, 0.1);     /* 较轻的边缘阴影，突出边框 */
+            
+            background-image: url('https://www.transparenttextures.com/patterns/white-linen.png'); /*添加纸张纹理背景 */
+            
+            /* 边框渐变效果，模拟木质或金属质感 */
+            border-image: linear-gradient(45deg, #d1d1d1, #b0b0b0) 1;
+        }
+
+        /* 调整容器大小 */
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 16px;
+            height: 16px;
+            background-color: #333;
+            cursor: se-resize;
         }
 
         /* 上方白色标题 */
         .top-header {
-            position: absolute; /* 固定在左上角 */
-            top: 10px;
-            left: 20px;
             background-color: transparent;
             color: #5a92d1;
             font-size: 24px;
-            font-family: 'Patrick Hand', cursive;
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-            z-index: 10; /* 确保标题位于所有元素之上 */
+            padding: 20px;
         }
+
         /* 下方红色标题 */
         .main-header {
             background-color: #d44;
             color: #fff;
-            padding: 20px;
-            display: flex; /* 启用 Flexbox */
-            justify-content: space-evenly; /* 平均分布 */
-            align-items: center; /* 垂直居中 */
+            padding: 24px;
             font-size: 24px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
             text-align: center;
         }
 
         .main-header .header-item {
-            flex: 1; /* 每个单词占相同的空间 */
-            text-align: center; /* 居中显示文字 */
-        }
-        .board-container {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
+            text-align: center;
         }
 
+        /* 看板容器 */
+        .board-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        /* 列样式 */
         .column {
-            background-color: #f5f5f5;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            flex: 1;
-            margin: 0 10px;
+            background-color:rgba(255, 255, 255, 0);
+            border-radius: 30px;
+            box-shadow: rgba(255, 255, 255, 0);
             padding: 20px;
             min-height: 300px;
-            position: relative; /* 为加号按钮提供位置 */
+            position: relative;
+            border-top: 0;
+            border-right: 0;
+            border-bottom: 0;
+            border-left: 5px solid transparent; /* 使用透明边框占位 */
+            border-image: url('https://github.com/aliasaria/scrumblr/blob/master/client/images/green-board-line.png?raw=true');  /* 在这里替换为你的图片 URL */
+
+            border-image-slice: 30;  /* 切割图片，避免拉伸 */
+            border-image-repeat: round; 
+            
+   
         }
 
-        .column h2 {
-            color: #d44;
-            margin-top: 0;
-            font-family: 'Allura', cursive;
-        }
-
+        /* 真实便利贴卡片样式 */
         .card {
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            padding: 20px;
+            background-image: url('https://github.com/aliasaria/scrumblr/blob/master/client/images/postit/p11.png?raw=true'); /* 使用便利贴图片 */
+            background-size: contain; /* 让背景图片覆盖整个卡片 */
+            background-position: center; /* 确保图片居中显示 */
+            background-repeat: no-repeat; /* 不重复背景图片 */
+            padding: 60px 30px; /* 增大内边距，卡片内容区域变大 */
+            min-height: 30px; /* 增大卡片的最小高度 *//* 调整 padding，确保文字不会被背景遮挡 */
             cursor: move;
             position: relative;
         }
 
+        /* 卡片文字样式 */
         .card h3 {
-            margin-top: 0;
-            cursor: text;
-            font-family: 'Allura', cursive;
+            font-family: 'Permanent Marker', cursive;  /* 手写字体 */
+            font-size: 18px;
+            color: #333;  /* 文字颜色 */
+            position: absolute;
+            top: 50%;  /* 使文字垂直居中 */
+            left: 50%;  /* 使文字水平居中 */
+            transform: translate(-50%, -50%);  /* 完全居中对齐 */
+            margin: 0; /* 去除默认的外边距 */
+            text-align: center;
         }
 
+        /* 鼠标悬停时卡片略微放大 */
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        /* 新建卡片按钮 */
         .add-card-btn {
             position: absolute;
             bottom: 10px;
@@ -89,13 +152,9 @@
             font-size: 24px;
             border: none;
             cursor: pointer;
-            box-shadow: none;
         }
 
-        .add-card-btn:hover {
-            color: #c33;
-        }
-
+        /* 删除按钮样式 */
         .delete-btn {
             position: absolute;
             top: 10px;
@@ -106,41 +165,110 @@
             font-size: 20px;
             cursor: pointer;
         }
+       /* 隐藏删除按钮，默认透明 */
+        .card .delete-btn {
+            opacity: 0;
+            pointer-events: none; /* 防止用户误触隐藏的按钮 */
+            transition: opacity 0.3s ease; /* 添加过渡动画 */
+        }
+
+        /* 鼠标悬停卡片时，显示删除按钮 */
+        .card:hover .delete-btn {
+            opacity: 1;
+            pointer-events: auto; /* 恢复用户操作 */
+        }
+
+        /* 调整容器大小的拖拽手柄 */
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 16px;
+            height: 16px;
+            background-color: #333;
+            cursor: se-resize;
+        }
+     /* 黑板擦 */
+            .blackboard-eraser {
+            position: absolute;
+            bottom: 0;  /* 调整为0，紧贴底部边缘 */
+            left: 90%;  /* 水平居中 */
+            transform: translateX(-50%);  /* 完全居中对齐 */
+            width: 120px;  /* 黑板擦的宽度，根据需要调整 */
+            height: 30px;  /* 黑板擦的高度，根据需要调整 */
+            background-image: url('https://github.com/aliasaria/scrumblr/blob/master/client/images/eraser.png?raw=true');
+            background-size: contain;  /* 确保图片保持比例，完全显示 */
+            background-position: center;  /* 图片居中显示 */
+            background-repeat: no-repeat;  /* 不重复背景图片 */
+            z-index: 10;  /* 确保黑板擦在其他元素之上 */
+            opacity: 1;  /* 设置为完全不透明 */
+            pointer-events: none;  /* 不干扰用户操作 */
+        }
+        /* 黑板擦 */
+            .maker {
+                position: absolute;
+                bottom: 0;  /* 调整为0，紧贴底部边缘 */
+                left: 70%;  /* 水平居中 */
+                transform: translateX(-50%);  /* 完全居中对齐 */
+                width: 120px;  /* 黑板擦的宽度，根据需要调整 */
+                height: 20px;  /* 黑板擦的高度，根据需要调整 */
+                background-image: url('https://github.com/aliasaria/scrumblr/blob/master/client/images/marker.png?raw=true');
+                background-size: contain;  /* 确保图片保持比例，完全显示 */
+                background-position: center;  /* 图片居中显示 */
+                background-repeat: no-repeat;  /* 不重复背景图片 */
+                z-index: 10;  /* 确保黑板擦在其他元素之上 */
+                opacity: 1;  /* 设置为完全不透明 */
+                pointer-events: none;  /* 不干扰用户操作 */
+            }
+
     </style>
 </head>
 
 <body>
-    <!-- 白色背景的顶部标题 -->
-    <div class="top-header">
-        SCRUM FOR AGILE TEAMS
-    </div>
-    <!-- 红色背景的主要标题 -->
-    <header class="main-header">
-        <div class="header-item">Stories</div>
-        <div class="header-item">To Do</div>
-        <div class="header-item">In Progress</div>
-        <div class="header-item">Verify</div>
-        <div class="header-item">Done</div>
-    </header>
-    <main>
-        <div class="board-container">
-            <div class="column" id="stories" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <div class="card" draggable="true" ondragstart="drag(event)">
-                    <h3 ondblclick="editCardText(this)">My Favorite Project</h3>
-                    <button class="delete-btn" onclick="deleteCard(this)">-</button>
+    <!-- 容器 -->
+    <div class="container" id="boardContainer">
+        <!-- 白色背景的顶部标题 -->
+        <div class="top-header">SCRUM BOARD</div>
+
+        <!-- 红色背景的主要标题 -->
+        <header class="main-header">
+            <div class="header-item">Stories</div>
+            <div class="header-item">To Do</div>
+            <div class="header-item">In Progress</div>
+            <div class="header-item">Verify</div>
+            <div class="header-item">Done</div>
+        </header>
+
+        <main>
+            <div class="board-container">
+                <div class="column" id="stories" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="card" id="card-1" draggable="true" ondragstart="drag(event)">
+                        <h3 ondblclick="editCardText(this)">My Favorite Project</h3>
+                        <!-- 使用 FontAwesome 垃圾桶图标 -->
+                        <button class="delete-btn" onclick="deleteCard(this)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+                </div>
+                <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+                </div>
+                <div class="column" id="verify" ondrop="drop(event)" ondragover="allowDrop(event)">
+                </div>
+                <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
                 </div>
             </div>
-            <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
-            </div>
-            <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
-            </div>
-            <div class="column" id="verify" ondrop="drop(event)" ondragover="allowDrop(event)">
-            </div>
-            <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
-            </div>
-        </div>
-    </main>
-    <button class="add-card-btn" onclick="addCard('stories')">+</button>
+        </main>
+
+        <!-- 新建卡片按钮 -->
+        <button class="add-card-btn" onclick="addCard('stories')">+</button>
+        <div class="maker"></div> 
+        <div class="blackboard-eraser"></div> 
+
+        <!-- 调整容器大小的拖拽手柄 -->
+        <div class="resize-handle" onmousedown="initResize(event)"></div>
+    </div>
 
     <script>
         // 拖放功能
@@ -161,9 +289,6 @@
             if (targetColumn.classList.contains("column")) {
                 targetColumn.appendChild(draggedCard);
                 saveBoard();  // 更新本地存储
-            } else if (targetColumn.classList.contains("card")) {
-                targetColumn.parentNode.insertBefore(draggedCard, targetColumn);
-                saveBoard();  // 更新本地存储
             }
         }
 
@@ -171,16 +296,23 @@
         function addCard(columnId) {
             var newCard = document.createElement("div");
             newCard.className = "card";
+            newCard.id = "card-" + new Date().getTime();  // 使用当前时间生成唯一 ID
             newCard.draggable = true;
-            newCard.id = "card-" + new Date().getTime(); // 为每个新卡片生成一个唯一的 ID
             newCard.ondragstart = function(event) { drag(event); };
             newCard.innerHTML = `<h3 ondblclick="editCardText(this)">New Task</h3>`;
             var deleteBtn = document.createElement("button");
             deleteBtn.className = "delete-btn";
-            deleteBtn.innerText = "-";
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
             deleteBtn.onclick = function() { deleteCard(deleteBtn); };
             newCard.appendChild(deleteBtn);
             document.getElementById(columnId).appendChild(newCard);
+            saveBoard();  // 更新本地存储
+        }
+
+        // 删除卡片
+        function deleteCard(button) {
+            var card = button.parentNode;
+            card.parentNode.removeChild(card);
             saveBoard();  // 更新本地存储
         }
 
@@ -192,21 +324,12 @@
             input.value = currentText;
             input.onblur = function() {
                 element.innerText = input.value || currentText;
-                element.style.cursor = "text"; // 恢复光标样式
                 saveBoard();  // 更新本地存储
             };
             element.innerText = '';
             element.appendChild(input);
             input.focus();
             input.select();
-            element.style.cursor = "text"; // 设置光标样式
-        }
-
-        // 删除卡片
-        function deleteCard(button) {
-            var card = button.parentNode;
-            card.parentNode.removeChild(card);
-            saveBoard();  // 更新本地存储
         }
 
         // 从 localStorage 加载看板数据
@@ -220,13 +343,6 @@
                         const newCard = createCardElement(card.id, card.text);
                         column.appendChild(newCard);
                     });
-                });
-            } else {
-                // 如果 localStorage 没有数据，添加一个空的卡片
-                ['stories', 'todo', 'in-progress', 'verify', 'done'].forEach(columnId => {
-                    const column = document.getElementById(columnId);
-                    const newCard = createCardElement("card-" + new Date().getTime(), "Click to edit");
-                    column.appendChild(newCard);
                 });
             }
         }
@@ -258,7 +374,7 @@
             newCard.innerHTML = `<h3 ondblclick="editCardText(this)">${text}</h3>`;
             const deleteBtn = document.createElement("button");
             deleteBtn.className = "delete-btn";
-            deleteBtn.innerText = "-";
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
             deleteBtn.onclick = function() { deleteCard(deleteBtn); };
             newCard.appendChild(deleteBtn);
             return newCard;
@@ -266,6 +382,52 @@
 
         // 页面加载时，加载看板数据
         window.onload = loadBoard;
+
+        // 拖动调整容器大小
+        function initResize(e) {
+            isResizing = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+        }
+
+        function resize(e) {
+            if (!isResizing) return;
+
+            const container = document.getElementById('boardContainer');
+            const style = window.getComputedStyle(container);
+
+            const currentWidth = parseInt(style.width, 10);
+            const currentHeight = parseInt(style.height, 10);
+
+            const deltaX = e.clientX - lastX;
+            const deltaY = e.clientY - lastY;
+
+            const newWidth = currentWidth + deltaX;
+            const newHeight = currentHeight + deltaY;
+
+            const minWidth = 300;
+            const minHeight = 300;
+
+            if (newWidth >= minWidth) {
+                container.style.width = `${newWidth}px`;
+                lastX = e.clientX;
+            }
+
+            if (newHeight >= minHeight) {
+                container.style.height = `${newHeight}px`;
+                lastY = e.clientY;
+            }
+        }
+
+        function stopResize() {
+            isResizing = false;
+
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+        }
     </script>
 </body>
 </html>
