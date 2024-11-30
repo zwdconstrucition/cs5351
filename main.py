@@ -1,23 +1,29 @@
 import os
 import sqlite3
 import json
-from flask import Flask, request, render_template, session, redirect
-from flask.json import jsonify
-
+from flask import Flask, request, render_template, session, redirect,jsonify
 import user_login
 import run_code
 import FlowChart
 import scrum_board
-import Pylint
+import pylintCheck
 import uml_diagram
 
-app = Flask(__name__)
-user_login.SetFunctions(app) # 设置用户登录相关功能
-run_code.SetFunctions(app) # 设置python程序相关功能
-FlowChart.SetFunctions(app) # 设置代码转化流程图功能
-scrum_board.SetFunctions(app)# show scrum board
-Pylint.SetFunctions(app)
-uml_diagram.SetFunctions(app)
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, 'D://code_edit//CodeWalker//Frontend//templates'),
+    static_folder=os.path.join(BASE_DIR, 'D://code_edit//CodeWalker//Frontend//static')
+)
+
+user_login.SetFunctions(app)  # login
+run_code.SetFunctions(app)    # run python code
+FlowChart.SetFunctions(app)   # flowchart
+scrum_board.SetFunctions(app) # scrum board
+pylintCheck.SetFunctions(app) # pylint
+uml_diagram.SetFunctions(app) # uml diagram
 
 # Handle errors globally
 @app.errorhandler(500)
