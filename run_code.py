@@ -1,107 +1,77 @@
-import unittest
 import os
-import tempfile
-import json
-from flask import Flask, session
 import sys
-module_path = os.path.abspath("D://code_edit//CodeWalker//run_code.py")
-if module_path not in sys.path:
-    sys.path.append(module_path)
+import traceback
+import json
+import subprocess
+import io
+from flask import Flask, request, render_template, session, redirect
+from workdir import WorkDir
 
-class FileOperationTestCase(unittest.TestCase):
-    def setUp(self):
-        # Create a temporary work directory for testing
-        self.test_dir = tempfile.mkdtemp()
-        
-        # Set up Flask app with a mock session
-        self.app = Flask(__name__)
-        self.app.secret_key = 'test_secret_key'
-        self.app.config['TEST_WORK_DIR'] = self.test_dir
-        SetFunctions(self.app)
-        self.client = self.app.test_client()
-        
-        # Add a mock session handler
-        @self.app.before_request
-        def add_mock_session():
-            session['userName'] = 'testuser'
+def SetFunctions(app):
+    @app.route("/getFileList", methods=("POST",))
+    def getFileList():
+        '''读取用户工作文件夹，获取文件列表，通过json方式返回'''
+        user_name = session["userName"]
+        with WorkDir(user_name):
+            data = [{"fileName": fileName} for fileName in os.listdir(".\\")]
+        jsonData = json.dumps(data, sort_keys=True,
+                              indent=4, separators=(',', ': '))
+        # print(jsonData)
+        return jsonData
 
-    def tearDown(self):
-        # Remove temporary directory and its contents
-        for root, dirs, files in os.walk(self.test_dir, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-        os.rmdir(self.test_dir)
+    @app.route("/getFile", methods=("POST",))
+    def getFile():
+        '''获取特定文件的内容'''
+        user_name = session["userName"]
+        file_name = request.form["fileName"]
+        with WorkDir(user_name):
+            with open(file_name) as f:
+                content = f.read()
+        return content
 
-    def test_get_file_list(self):
-        # Create some test files
-        test_files = ['file1.txt', 'file2.py', 'file3.json']
-        for file_name in test_files:
-            with open(os.path.join(self.test_dir, file_name), 'w') as f:
-                f.write('test content')
+    @app.route("/deleteFile", methods=("POST",))
+    def deleteFile():
+        '''执行删除文件命令'''
+        user_name = session["userName"]
+        file_name = request.form["fileName"]
+        with WorkDir(user_name):
+            os.remove(file_name)
+        return ""
 
-        response = self.client.post('/getFileList')
-        self.assertEqual(response.status_code, 200)
+    @app.route("/saveCode", methods=("POST",))
+    def saveCode():
+        '''保存文件：从request读入code和fileName，将code中的代码存进fileName文件里'''
+        user_name = session["userName"]
+        code = request.form["code"]
+        file_name = request.form["fileName"]
+        overWrite = request.form["overWrite"]
 
-        file_list = json.loads(response.data)
-        file_names = [file['fileName'] for file in file_list]
-        self.assertCountEqual(file_names, test_files)
+        with WorkDir(user_name):
+            if overWrite == "false" and os.path.exists(file_name):  # 判断该文件名是否已被使用
+                return "file exists"
+            with open(file_name, "w") as f:
+                f.write(code)
+        return "success"
 
-    def test_get_file(self):
-        # Create a test file
-        test_file = 'test.txt'
-        test_content = 'This is a test file.'
-        with open(os.path.join(self.test_dir, test_file), 'w') as f:
-            f.write(test_content)
+    @app.route("/runCode", methods=("POST",))
+    def runCode():
+        '''运行代码fileName，并将输出和错误信息一并返回'''
+        user_name = session["userName"]
+        file_name = request.form["fileName"]
 
-        response = self.client.post('/getFile', data={'fileName': test_file})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode('utf-8'), test_content)
+        with WorkDir(user_name):
+            proc = subprocess.Popen(f"python {file_name}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                    bufsize=-1)
+            proc.wait()
+            # 设置流，用于获取程序输出
+            stream_stdout = io.TextIOWrapper(proc.stdout, encoding='utf-8')
+            stream_stderr = io.TextIOWrapper(proc.stderr, encoding='utf-8')
 
-    def test_delete_file(self):
-        # Create a test file
-        test_file = 'delete_me.txt'
-        with open(os.path.join(self.test_dir, test_file), 'w') as f:
-            f.write('Delete me!')
+            str_stdout = str(stream_stdout.read())
+            str_stderr = str(stream_stderr.read())
+            # 防止输出traceback时，服务器内部组织泄露，把所有工作目录替换为'.'
+            str_stderr = str_stderr.replace(os.getcwd(), ".")
+            # print("stdout: " + str_stdout)
+            # print("stderr: " + str_stderr)
 
-        response = self.client.post('/deleteFile', data={'fileName': test_file})
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(os.path.exists(os.path.join(self.test_dir, test_file)))
-
-    def test_save_code(self):
-        # Test saving a new file
-        test_file = 'new_file.py'
-        test_code = 'print("Hello, world!")'
-        response = self.client.post('/saveCode', data={
-            'fileName': test_file,
-            'code': test_code,
-            'overWrite': 'false'
-        })
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode('utf-8'), 'success')
-        
-        with open(os.path.join(self.test_dir, test_file), 'r') as f:
-            self.assertEqual(f.read(), test_code)
-
-        # Test attempting to overwrite without permission
-        response = self.client.post('/saveCode', data={
-            'fileName': test_file,
-            'code': 'print("Overwrite attempt")',
-            'overWrite': 'false'
-        })
-        self.assertEqual(response.data.decode('utf-8'), 'file exists')
-
-    def test_run_code(self):
-        # Create a Python script
-        test_file = 'test_script.py'
-        test_code = 'print("Running test script.")'
-        with open(os.path.join(self.test_dir, test_file), 'w') as f:
-            f.write(test_code)
-
-        response = self.client.post('/runCode', data={'fileName': test_file})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('Running test script.', response.data.decode('utf-8'))
-
-if __name__ == '__main__':
-    unittest.main()
+        return str_stdout + str_stderr
