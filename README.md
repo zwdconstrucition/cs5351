@@ -95,13 +95,12 @@ Our platform integrates an online Python Web Editor with task management tools t
 ---
 
 ## **Getting Started**
-
+(The sprint3 branch is the final version, and put the static and templates folders in the frontend folder)
 1. **Install Required Dependencies**:  
    ```bash
    pip install flask pyflowchart pylint pyreverse
    sudo apt-get install graphviz
    ```
-   
 2.**Run the Server**:
    ```bash
    python main.py
