@@ -101,7 +101,8 @@ Our platform integrates an online Python Web Editor with task management tools t
    pip install flask pyflowchart pylint pyreverse
    sudo apt-get install graphviz
    ```
-   
+   Put static and templates in the frontend directory
+
 2.**Run the Server**:
    ```bash
    python main.py
