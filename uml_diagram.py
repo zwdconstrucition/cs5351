@@ -7,22 +7,13 @@ def SetFunctions(app):
     @app.route("/uml-diagram", methods=["GET"])
     def uml_diagram():
         """
-        Serve the uml-diagram.html page
+        Get the fileName and generate UML
         """
-        return app.send_static_file("uml-diagram.html")
-    
-    @app.route("/generateUML", methods=["POST"])
-    def generate_uml():
+        file_name = request.args.get("fileName")
+        return generate_uml(file_name)
+
+    def generate_uml(temp_file):
         try:
-            code = request.form.get("code")
-            if not code:
-                return jsonify({"error": "No code provided"}), 400
-
-            # Save the code to a temporary file
-            temp_file = "temp_code.py"
-            with open(temp_file, "w") as f:
-                f.write(code)
-
             # Run pyreverse to generate UML diagram
             subprocess.run(
                 ["pyreverse", "-o", "dot", "-p", "diagram", temp_file],
