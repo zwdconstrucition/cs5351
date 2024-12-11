@@ -249,23 +249,44 @@
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
+                    <!-- 新建卡片按钮 -->
+                    <button class="add-card-btn" onclick="addCard('stories')">+</button>
+                    <div class="maker"></div>
+                    <div class="blackboard-eraser"></div>
                 </div>
                 <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="card" id="card-2" draggable="true" ondragstart="drag(event)">
+                        <h3 ondblclick="editCardText(this)">UML generate func bug fix</h3>
+                        <!-- 使用 FontAwesome 垃圾桶图标 -->
+                        <button class="delete-btn" onclick="deleteCard(this)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    <!-- 新建卡片按钮 -->
+                    <button class="add-card-btn" onclick="addCard('todo')">+</button>
+                    <div class="maker"></div>
+                    <div class="blackboard-eraser"></div>
                 </div>
                 <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- 新建卡片按钮 -->
+                    <button class="add-card-btn" onclick="addCard('in-progress')">+</button>
+                    <div class="maker"></div>
+                    <div class="blackboard-eraser"></div>
                 </div>
                 <div class="column" id="verify" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- 新建卡片按钮 -->
+                    <button class="add-card-btn" onclick="addCard('verify')">+</button>
+                    <div class="maker"></div>
+                    <div class="blackboard-eraser"></div>
                 </div>
                 <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- 新建卡片按钮 -->
+                    <button class="add-card-btn" onclick="addCard('done')">+</button>
+                    <div class="maker"></div>
+                    <div class="blackboard-eraser"></div> 
                 </div>
             </div>
         </main>
-
-        <!-- 新建卡片按钮 -->
-        <button class="add-card-btn" onclick="addCard('stories')">+</button>
-        <div class="maker"></div> 
-        <div class="blackboard-eraser"></div> 
-
         <!-- 调整容器大小的拖拽手柄 -->
         <div class="resize-handle" onmousedown="initResize(event)"></div>
     </div>
