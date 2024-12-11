@@ -5,7 +5,7 @@ from workdir import WorkDir
 
 def SetFunctions(app):
     
-    @app.route("/scrum-board")
+    @app.route("/scrum-board", methods=("GET",))
     def scrum_board():
         '''scrum board html'''
-        return app.send_static_file("scrum-board.html")
+        return render_template("scrum-board.html")
